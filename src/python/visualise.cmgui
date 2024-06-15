@@ -1,0 +1,49 @@
+gfx read node LinearCantilever.part0.exnode
+gfx read node LinearCantilever.part0.exelem
+
+gfx def faces egroup Cantilever
+
+gfx define field Delta component Displacement.1 Displacement.2 Displacement.3
+gfx define field Deformed add fields Geometry Delta scale_factors 1.0 100000.0
+gfx define field Force component Traction.1 Traction.2 Traction.3
+gfx define field ForceMagnitude magnitude field Force
+
+gfx create spectrum ForceSpectrum
+gfx modify spectrum ForceSpectrum clear overwrite_colour;
+gfx modify spectrum ForceSpectrum linear range 0.0 25.0 extend_above extend_below rainbow colour_range 0 1 component 1;
+
+gfx create spectrum WorkSpectrum
+gfx modify spectrum WorkSpectrum clear overwrite_colour;
+gfx modify spectrum WorkSpectrum linear range 0.0 1.0e-3 extend_above extend_below rainbow colour_range 0 1 component 1 reverse;
+
+#Create the graphics window and set view angles
+gfx create window 1 double_buffer;
+gfx modify window 1 image add_light default;
+gfx modify window 1 layout simple ortho_axes x y eye_spacing 0.25 height 1000 width 1500;
+gfx modify window 1 set current_pane 1;
+gfx modify window 1 background colour 0 0 0 texture none;
+gfx modify window 1 view parallel eye_point 5.0 -30.0 00.0 interest_point 5.0 0.0 0.0 up_vector 0.00 0.00 1.00 view_angle 40 near_clipping_plane 0.01 far_clipping_plane 150.0
+
+#Display axes
+gfx modify g_element Cantilever point glyph axes_solid_xyz general size "5.0*5.0*5.0" centre 0,0,0 font default select_on material yellow selected_material default_selected
+
+#Display undeformed solid lines
+gfx modify g_element Cantilever lines coordinate Geometry tessellation default LOCAL native_discretization NONE select_on material default selected_material default_selected;
+
+#Display undeformed solid nodes
+gfx modify g_element Cantilever node_points coordinate Geometry LOCAL glyph sphere general size "0.1*0.1*0.1" centre 0,0,0 label cmiss_number font default select_on material default selected_material default_selected;
+
+#Display deformed solid lines
+gfx modify g_element Cantilever lines coordinate Deformed material red
+
+#Display tractions
+#gfx modify g_element Cantilever node_points coordinate Deformed glyph arrow_solid general size "1.0*1.01*1.0" centre 0,0,0 font default orientation Force select_on material default data ForceMagnitude scale_factors "0.05*0.01*0.00" selected_material default_selected spectrum ForceSpectrum
+
+#Display elastic work
+gfx modify g_element Cantilever surface coordinate Deformed exterior tessellation default LOCAL native_discretization NONE select_on data ElasticWork spectrum WorkSpectrum selected_material default_selected render_shaded;
+
+#Write out image
+gfx print window 1 jpg file "Cantilever.jpg" height 1000 width 1500
+
+gfx edit scene
+
