@@ -8,7 +8,7 @@
 import sys
 
 # Intialise OpenCMISS
-from opencmiss.iron import iron
+from opencmiss.opencmiss import OpenCMISS_Python as oc
 
 #-----------------------------------------------------------------------------------------------------------
 # SET PROBLEM PARAMETERS
@@ -101,31 +101,31 @@ else:
     sys.exit('ERROR: number of global Z elements must be greater than 0.')
 
 if (interpolationType == LINEAR_LAGRANGE):
-    interpolationTypeXi = iron.BasisInterpolationSpecifications.LINEAR_LAGRANGE
+    interpolationTypeXi = oc.BasisInterpolationSpecifications.LINEAR_LAGRANGE
     numberOfNodesXi = 2
     numberOfGaussXi = 2
 elif (interpolationType == QUADRATIC_LAGRANGE):
-    interpolationTypeXi = iron.BasisInterpolationSpecifications.QUADRATIC_LAGRANGE
+    interpolationTypeXi = oc.BasisInterpolationSpecifications.QUADRATIC_LAGRANGE
     numberOfNodesXi = 3
     numberOfGaussXi = 3
 elif (interpolationType == CUBIC_LAGRANGE):
-    interpolationTypeXi = iron.BasisInterpolationSpecifications.CUBIC_LAGRANGE
+    interpolationTypeXi = oc.BasisInterpolationSpecifications.CUBIC_LAGRANGE
     numberOfNodesXi = 4
     numberOfGaussXi = 4
 elif (interpolationType == CUBIC_HERMITE):
-    interpolationTypeXi = iron.BasisInterpolationSpecifications.CUBIC_HERMITE
+    interpolationTypeXi = oc.BasisInterpolationSpecifications.CUBIC_HERMITE
     numberOfNodesXi = 2
     numberOfGaussXi = 4
 elif (interpolationType == LINEAR_SIMPLEX):
-    interpolationTypeXi = iron.BasisInterpolationSpecifications.LINEAR_SIMPLEX
+    interpolationTypeXi = oc.BasisInterpolationSpecifications.LINEAR_SIMPLEX
     numberOfNodesXi = 2
     gaussOrder = 4
 elif (interpolationType == QUADRATIC_SIMPLEX):
-    interpolationTypeXi = iron.BasisInterpolationSpecifications.QUADRATIC_SIMPLEX
+    interpolationTypeXi = oc.BasisInterpolationSpecifications.QUADRATIC_SIMPLEX
     numberOfNodesXi = 3
     gaussOrder = 4
 elif (interpolationType == CUBIC_SIMPLEX):
-    interpolationTypeXi = iron.BasisInterpolationSpecifications.CUBIC_SIMPLEX
+    interpolationTypeXi = oc.BasisInterpolationSpecifications.CUBIC_SIMPLEX
     numberOfNodesXi = 4
     gaussOrder = 5
 else:
@@ -159,34 +159,34 @@ if (not haveSimplex):
 # CONTEXT AND WORLD REGION
 #-----------------------------------------------------------------------------------------------------------
 
-context = iron.Context()
+context = oc.Context()
 context.Create(CONTEXT_USER_NUMBER)
 
-worldRegion = iron.Region()
+worldRegion = oc.Region()
 context.WorldRegionGet(worldRegion)
 
 #-----------------------------------------------------------------------------------------------------------
 # DIAGNOSTICS AND COMPUTATIONAL NODE INFORMATION
 #-----------------------------------------------------------------------------------------------------------
 
-iron.OutputSetOn("LinearCantilever")
+oc.OutputSetOn("LinearCantilever")
 
-iron.DiagnosticsSetOn(iron.DiagnosticTypes.IN,[1,2,3,4,5],"",["BoundaryConditionsVariable_NeumannIntegrate"])
+oc.DiagnosticsSetOn(oc.DiagnosticTypes.IN,[1,2,3,4,5],"",["BoundaryConditionsVariable_NeumannIntegrate"])
 
 # Get the computational nodes information
-computationEnvironment = iron.ComputationEnvironment()
+computationEnvironment = oc.ComputationEnvironment()
 context.ComputationEnvironmentGet(computationEnvironment)
 numberOfComputationalNodes = computationEnvironment.NumberOfWorldNodesGet()
 computationalNodeNumber = computationEnvironment.WorldNodeNumberGet()
 
-worldWorkGroup = iron.WorkGroup()
+worldWorkGroup = oc.WorkGroup()
 computationEnvironment.WorldWorkGroupGet(worldWorkGroup)
 
 #-----------------------------------------------------------------------------------------------------------
 # COORDINATE SYSTEM
 #-----------------------------------------------------------------------------------------------------------
 
-coordinateSystem = iron.CoordinateSystem()
+coordinateSystem = oc.CoordinateSystem()
 coordinateSystem.CreateStart(COORDINATE_SYSTEM_USER_NUMBER,context)
 coordinateSystem.DimensionSet(numberOfDimensions)
 coordinateSystem.CreateFinish()
@@ -195,7 +195,7 @@ coordinateSystem.CreateFinish()
 # REGION
 #-----------------------------------------------------------------------------------------------------------
 
-region = iron.Region()
+region = oc.Region()
 region.CreateStart(REGION_USER_NUMBER,worldRegion)
 region.LabelSet("Cantilever")
 region.CoordinateSystemSet(coordinateSystem)
@@ -205,12 +205,12 @@ region.CreateFinish()
 # BASIS
 #-----------------------------------------------------------------------------------------------------------
 
-basis = iron.Basis()
+basis = oc.Basis()
 basis.CreateStart(BASIS_USER_NUMBER,context)
 if (haveSimplex):
-    basis.TypeSet(iron.BasisTypes.SIMPLEX)
+    basis.TypeSet(oc.BasisTypes.SIMPLEX)
 else:
-    basis.TypeSet(iron.BasisTypes.LAGRANGE_HERMITE_TP)
+    basis.TypeSet(oc.BasisTypes.LAGRANGE_HERMITE_TP)
 basis.NumberOfXiSet(numberOfXi)
 basis.InterpolationXiSet([interpolationTypeXi]*numberOfXi)
 if (haveSimplex):
@@ -223,9 +223,9 @@ basis.CreateFinish()
 # MESH
 #-----------------------------------------------------------------------------------------------------------
 
-generatedMesh = iron.GeneratedMesh()
+generatedMesh = oc.GeneratedMesh()
 generatedMesh.CreateStart(GENERATED_MESH_USER_NUMBER,region)
-generatedMesh.TypeSet(iron.GeneratedMeshTypes.REGULAR)
+generatedMesh.TypeSet(oc.GeneratedMeshTypes.REGULAR)
 generatedMesh.BasisSet([basis])
 if (numberOfDimensions == 2):
     generatedMesh.ExtentSet([LENGTH,HEIGHT])
@@ -233,23 +233,23 @@ if (numberOfDimensions == 2):
 else:
     generatedMesh.ExtentSet([LENGTH,WIDTH,HEIGHT])
     generatedMesh.NumberOfElementsSet([numberOfGlobalXElements,numberOfGlobalYElements,numberOfGlobalZElements])
-mesh = iron.Mesh()
+mesh = oc.Mesh()
 generatedMesh.CreateFinish(MESH_USER_NUMBER,mesh)
 
 #-----------------------------------------------------------------------------------------------------------
 # MESH DECOMPOSITION
 #-----------------------------------------------------------------------------------------------------------
 
-decomposition = iron.Decomposition()
+decomposition = oc.Decomposition()
 decomposition.CreateStart(DECOMPOSITION_USER_NUMBER,mesh)
-decomposition.TypeSet(iron.DecompositionTypes.CALCULATED)
+decomposition.TypeSet(oc.DecompositionTypes.CALCULATED)
 decomposition.CreateFinish()
 
 #-----------------------------------------------------------------------------------------------------------
 # DECOMPOSER
 #-----------------------------------------------------------------------------------------------------------
 
-decomposer = iron.Decomposer()
+decomposer = oc.Decomposer()
 decomposer.CreateStart(DECOMPOSER_USER_NUMBER,worldRegion,worldWorkGroup)
 decompositionIndex = decomposer.DecompositionAdd(decomposition)
 decomposer.CreateFinish()
@@ -258,15 +258,15 @@ decomposer.CreateFinish()
 # GEOMETRIC FIELD
 #-----------------------------------------------------------------------------------------------------------
 
-geometricField = iron.Field()
+geometricField = oc.Field()
 geometricField.CreateStart(GEOMETRIC_FIELD_USER_NUMBER,region)
 geometricField.DecompositionSet(decomposition)
-geometricField.TypeSet(iron.FieldTypes.GEOMETRIC)
-geometricField.VariableLabelSet(iron.FieldVariableTypes.U,"Geometry")
-geometricField.ComponentMeshComponentSet(iron.FieldVariableTypes.U,1,1)
-geometricField.ComponentMeshComponentSet(iron.FieldVariableTypes.U,2,1)
+geometricField.TypeSet(oc.FieldTypes.GEOMETRIC)
+geometricField.VariableLabelSet(oc.FieldVariableTypes.U,"Geometry")
+geometricField.ComponentMeshComponentSet(oc.FieldVariableTypes.U,1,1)
+geometricField.ComponentMeshComponentSet(oc.FieldVariableTypes.U,2,1)
 if (numberOfDimensions == 3):
-    geometricField.ComponentMeshComponentSet(iron.FieldVariableTypes.U,3,1)
+    geometricField.ComponentMeshComponentSet(oc.FieldVariableTypes.U,3,1)
 geometricField.CreateFinish()
 
 # Set geometry from the generated mesh
@@ -277,16 +277,16 @@ generatedMesh.GeometricParametersCalculate(geometricField)
 #-----------------------------------------------------------------------------------------------------------
 
 # Create linear elasiticity equations set
-elasticityEquationsSetField = iron.Field()
-elasticityEquationsSet = iron.EquationsSet()
+elasticityEquationsSetField = oc.Field()
+elasticityEquationsSet = oc.EquationsSet()
 if (numberOfDimensions == 2):
-    elasticityEquationsSetSpecification = [iron.EquationsSetClasses.ELASTICITY,
-                                           iron.EquationsSetTypes.LINEAR_ELASTICITY,
-                                           iron.EquationsSetSubtypes.TWO_DIMENSIONAL_PLANE_STRESS]
+    elasticityEquationsSetSpecification = [oc.EquationsSetClasses.ELASTICITY,
+                                           oc.EquationsSetTypes.LINEAR_ELASTICITY,
+                                           oc.EquationsSetSubtypes.TWO_DIMENSIONAL_PLANE_STRESS]
 else:
-    elasticityEquationsSetSpecification = [iron.EquationsSetClasses.ELASTICITY,
-                                           iron.EquationsSetTypes.LINEAR_ELASTICITY,
-                                           iron.EquationsSetSubtypes.THREE_DIMENSIONAL_ISOTROPIC]
+    elasticityEquationsSetSpecification = [oc.EquationsSetClasses.ELASTICITY,
+                                           oc.EquationsSetTypes.LINEAR_ELASTICITY,
+                                           oc.EquationsSetSubtypes.THREE_DIMENSIONAL_ISOTROPIC]
 elasticityEquationsSet.CreateStart(ELASTICITY_EQUATIONS_SET_USER_NUMBER,region,geometricField,
                          elasticityEquationsSetSpecification,
                          ELASTICITY_EQUATIONS_SET_FIELD_USER_NUMBER,elasticityEquationsSetField)
@@ -296,52 +296,52 @@ elasticityEquationsSet.CreateFinish()
 # EQUATIONS SET DEPENDENT
 #-----------------------------------------------------------------------------------------------------------
 
-elasticityDependentField = iron.Field()
+elasticityDependentField = oc.Field()
 elasticityEquationsSet.DependentCreateStart(ELASTICITY_DEPENDENT_FIELD_USER_NUMBER,elasticityDependentField)
 elasticityDependentField.LabelSet("ElasticityDependent")
-elasticityDependentField.VariableLabelSet(iron.FieldVariableTypes.U,"Displacement")
-elasticityDependentField.VariableLabelSet(iron.FieldVariableTypes.T,"Traction")
+elasticityDependentField.VariableLabelSet(oc.FieldVariableTypes.U,"Displacement")
+elasticityDependentField.VariableLabelSet(oc.FieldVariableTypes.T,"Traction")
 elasticityEquationsSet.DependentCreateFinish()
 
 #-----------------------------------------------------------------------------------------------------------
 # EQUATIONS SET MATERIALS
 #-----------------------------------------------------------------------------------------------------------
 
-elasticityMaterialsField = iron.Field()
+elasticityMaterialsField = oc.Field()
 elasticityEquationsSet.MaterialsCreateStart(ELASTICITY_MATERIALS_FIELD_USER_NUMBER,elasticityMaterialsField)
 elasticityMaterialsField.LabelSet("ElasticityMaterials")
-elasticityMaterialsField.VariableLabelSet(iron.FieldVariableTypes.U,"Materials")
+elasticityMaterialsField.VariableLabelSet(oc.FieldVariableTypes.U,"Materials")
 elasticityEquationsSet.MaterialsCreateFinish()    
 # Initialise the analytic field values
-elasticityMaterialsField.ComponentValuesInitialise(iron.FieldVariableTypes.U,iron.FieldParameterSetTypes.VALUES,
+elasticityMaterialsField.ComponentValuesInitialise(oc.FieldVariableTypes.U,oc.FieldParameterSetTypes.VALUES,
                                                    1,YOUNGS_MODULUS)
-elasticityMaterialsField.ComponentValuesInitialise(iron.FieldVariableTypes.U,iron.FieldParameterSetTypes.VALUES,
+elasticityMaterialsField.ComponentValuesInitialise(oc.FieldVariableTypes.U,oc.FieldParameterSetTypes.VALUES,
                                                    2,POISSONS_RATIO)
 if(numberOfDimensions==2):
-    elasticityMaterialsField.ComponentValuesInitialise(iron.FieldVariableTypes.U,iron.FieldParameterSetTypes.VALUES,
+    elasticityMaterialsField.ComponentValuesInitialise(oc.FieldVariableTypes.U,oc.FieldParameterSetTypes.VALUES,
                                                        3,THICKNESS)
 
 #-----------------------------------------------------------------------------------------------------------
 # EQUATIONS SET ANALYTIC
 #-----------------------------------------------------------------------------------------------------------
 
-elasticityAnalyticField = iron.Field()
+elasticityAnalyticField = oc.Field()
 if(numberOfDimensions==3):
-    elasticityEquationsSet.AnalyticCreateStart(iron.EquationsSetLinearElasticityAnalyticFunctionTypes.CANTILEVER_END_LOAD,
+    elasticityEquationsSet.AnalyticCreateStart(oc.EquationsSetLinearElasticityAnalyticFunctionTypes.CANTILEVER_END_LOAD,
                                                ELASTICITY_ANALYTIC_FIELD_USER_NUMBER,elasticityAnalyticField)
     elasticityAnalyticField.LabelSet("ElasticityAnalytic")
-    elasticityAnalyticField.VariableLabelSet(iron.FieldVariableTypes.U,"Analytic")
+    elasticityAnalyticField.VariableLabelSet(oc.FieldVariableTypes.U,"Analytic")
     elasticityEquationsSet.AnalyticCreateFinish()    
     # Initialise the analytic field values
-    elasticityAnalyticField.ComponentValuesInitialise(iron.FieldVariableTypes.U,iron.FieldParameterSetTypes.VALUES,
+    elasticityAnalyticField.ComponentValuesInitialise(oc.FieldVariableTypes.U,oc.FieldParameterSetTypes.VALUES,
                                                       1,LENGTH)
-    elasticityAnalyticField.ComponentValuesInitialise(iron.FieldVariableTypes.U,iron.FieldParameterSetTypes.VALUES,
+    elasticityAnalyticField.ComponentValuesInitialise(oc.FieldVariableTypes.U,oc.FieldParameterSetTypes.VALUES,
                                                       2,HEIGHT)
-    elasticityAnalyticField.ComponentValuesInitialise(iron.FieldVariableTypes.U,iron.FieldParameterSetTypes.VALUES,
+    elasticityAnalyticField.ComponentValuesInitialise(oc.FieldVariableTypes.U,oc.FieldParameterSetTypes.VALUES,
                                                       3,WIDTH)
-    elasticityAnalyticField.ComponentValuesInitialise(iron.FieldVariableTypes.U,iron.FieldParameterSetTypes.VALUES,
+    elasticityAnalyticField.ComponentValuesInitialise(oc.FieldVariableTypes.U,oc.FieldParameterSetTypes.VALUES,
                                                       4,YOUNGS_MODULUS)
-    elasticityAnalyticField.ComponentValuesInitialise(iron.FieldVariableTypes.U,iron.FieldParameterSetTypes.VALUES,
+    elasticityAnalyticField.ComponentValuesInitialise(oc.FieldVariableTypes.U,oc.FieldParameterSetTypes.VALUES,
                                                       5,MAX_FORCE)
 
 #-----------------------------------------------------------------------------------------------------------
@@ -353,60 +353,60 @@ if(numberOfDimensions==2):
     numberOfTensorComponents = 3
 else:
     numberOfTensorComponents = 6
-elasticityDerivedField = iron.Field()
+elasticityDerivedField = oc.Field()
 elasticityDerivedField.CreateStart(ELASTICITY_DERIVED_FIELD_USER_NUMBER,region)
 elasticityDerivedField.LabelSet("ElasticityDerived")
-elasticityDerivedField.TypeSet(iron.FieldTypes.GENERAL)
+elasticityDerivedField.TypeSet(oc.FieldTypes.GENERAL)
 elasticityDerivedField.DecompositionSet(decomposition)
 elasticityDerivedField.GeometricFieldSet(geometricField)
-elasticityDerivedField.DependentTypeSet(iron.FieldDependentTypes.DEPENDENT)
+elasticityDerivedField.DependentTypeSet(oc.FieldDependentTypes.DEPENDENT)
 elasticityDerivedField.NumberOfVariablesSet(3)
-elasticityDerivedField.VariableTypesSet([iron.FieldVariableTypes.U,iron.FieldVariableTypes.V,iron.FieldVariableTypes.W])
-elasticityDerivedField.VariableLabelSet(iron.FieldVariableTypes.U,"SmallStrain")
-elasticityDerivedField.VariableLabelSet(iron.FieldVariableTypes.V,"CauchyStress")
-elasticityDerivedField.VariableLabelSet(iron.FieldVariableTypes.W,"ElasticWork")
-elasticityDerivedField.NumberOfComponentsSet(iron.FieldVariableTypes.U,numberOfTensorComponents)
-elasticityDerivedField.NumberOfComponentsSet(iron.FieldVariableTypes.V,numberOfTensorComponents)
-elasticityDerivedField.NumberOfComponentsSet(iron.FieldVariableTypes.W,1)
+elasticityDerivedField.VariableTypesSet([oc.FieldVariableTypes.U,oc.FieldVariableTypes.V,oc.FieldVariableTypes.W])
+elasticityDerivedField.VariableLabelSet(oc.FieldVariableTypes.U,"SmallStrain")
+elasticityDerivedField.VariableLabelSet(oc.FieldVariableTypes.V,"CauchyStress")
+elasticityDerivedField.VariableLabelSet(oc.FieldVariableTypes.W,"ElasticWork")
+elasticityDerivedField.NumberOfComponentsSet(oc.FieldVariableTypes.U,numberOfTensorComponents)
+elasticityDerivedField.NumberOfComponentsSet(oc.FieldVariableTypes.V,numberOfTensorComponents)
+elasticityDerivedField.NumberOfComponentsSet(oc.FieldVariableTypes.W,1)
 for componentIdx in range(1,numberOfTensorComponents+1):
-    elasticityDerivedField.ComponentMeshComponentSet(iron.FieldVariableTypes.U,componentIdx,1)
-    elasticityDerivedField.ComponentMeshComponentSet(iron.FieldVariableTypes.V,componentIdx,1)
-elasticityDerivedField.ComponentMeshComponentSet(iron.FieldVariableTypes.W,1,1)
+    elasticityDerivedField.ComponentMeshComponentSet(oc.FieldVariableTypes.U,componentIdx,1)
+    elasticityDerivedField.ComponentMeshComponentSet(oc.FieldVariableTypes.V,componentIdx,1)
+elasticityDerivedField.ComponentMeshComponentSet(oc.FieldVariableTypes.W,1,1)
 for componentIdx in range(1,numberOfTensorComponents+1):
-    elasticityDerivedField.ComponentInterpolationSet(iron.FieldVariableTypes.U,componentIdx,iron.FieldInterpolationTypes.ELEMENT_BASED)
-    elasticityDerivedField.ComponentInterpolationSet(iron.FieldVariableTypes.V,componentIdx,iron.FieldInterpolationTypes.ELEMENT_BASED)
-elasticityDerivedField.ComponentInterpolationSet(iron.FieldVariableTypes.W,1,iron.FieldInterpolationTypes.ELEMENT_BASED)
+    elasticityDerivedField.ComponentInterpolationSet(oc.FieldVariableTypes.U,componentIdx,oc.FieldInterpolationTypes.ELEMENT_BASED)
+    elasticityDerivedField.ComponentInterpolationSet(oc.FieldVariableTypes.V,componentIdx,oc.FieldInterpolationTypes.ELEMENT_BASED)
+elasticityDerivedField.ComponentInterpolationSet(oc.FieldVariableTypes.W,1,oc.FieldInterpolationTypes.ELEMENT_BASED)
 elasticityDerivedField.CreateFinish()
 
 # Create the derived equations set fields
 elasticityEquationsSet.DerivedCreateStart(ELASTICITY_DERIVED_FIELD_USER_NUMBER,elasticityDerivedField)
-elasticityEquationsSet.DerivedVariableSet(iron.EquationsSetDerivedTensorTypes.SMALL_STRAIN,iron.FieldVariableTypes.U)
-elasticityEquationsSet.DerivedVariableSet(iron.EquationsSetDerivedTensorTypes.CAUCHY_STRESS,iron.FieldVariableTypes.V)
-elasticityEquationsSet.DerivedVariableSet(iron.EquationsSetDerivedTensorTypes.ELASTIC_WORK,iron.FieldVariableTypes.W)
+elasticityEquationsSet.DerivedVariableSet(oc.EquationsSetDerivedTensorTypes.SMALL_STRAIN,oc.FieldVariableTypes.U)
+elasticityEquationsSet.DerivedVariableSet(oc.EquationsSetDerivedTensorTypes.CAUCHY_STRESS,oc.FieldVariableTypes.V)
+elasticityEquationsSet.DerivedVariableSet(oc.EquationsSetDerivedTensorTypes.ELASTIC_WORK,oc.FieldVariableTypes.W)
 elasticityEquationsSet.DerivedCreateFinish()
 
 #-----------------------------------------------------------------------------------------------------------
 # EQUATIONS
 #-----------------------------------------------------------------------------------------------------------
 
-elasticityEquations = iron.Equations()
+elasticityEquations = oc.Equations()
 elasticityEquationsSet.EquationsCreateStart(elasticityEquations)
-#elasticityEquations.SparsityTypeSet(iron.EquationsSparsityTypes.FULL)
-elasticityEquations.SparsityTypeSet(iron.EquationsSparsityTypes.SPARSE)
-#elasticityEquations.OutputTypeSet(iron.EquationsOutputTypes.NONE)
-#elasticityEquations.OutputTypeSet(iron.EquationsOutputTypes.TIMING)
-#elasticityEquations.OutputTypeSet(iron.EquationsOutputTypes.MATRIX)
-elasticityEquations.OutputTypeSet(iron.EquationsOutputTypes.ELEMENT_MATRIX)
+#elasticityEquations.SparsityTypeSet(oc.EquationsSparsityTypes.FULL)
+elasticityEquations.SparsityTypeSet(oc.EquationsSparsityTypes.SPARSE)
+#elasticityEquations.OutputTypeSet(oc.EquationsOutputTypes.NONE)
+#elasticityEquations.OutputTypeSet(oc.EquationsOutputTypes.TIMING)
+#elasticityEquations.OutputTypeSet(oc.EquationsOutputTypes.MATRIX)
+elasticityEquations.OutputTypeSet(oc.EquationsOutputTypes.ELEMENT_MATRIX)
 elasticityEquationsSet.EquationsCreateFinish()
 
 #-----------------------------------------------------------------------------------------------------------
 # PROBLEM
 #-----------------------------------------------------------------------------------------------------------
 
-elasticityProblem = iron.Problem()
-elasticityProblemSpecification = [iron.ProblemClasses.ELASTICITY,
-                                  iron.ProblemTypes.LINEAR_ELASTICITY,
-                                  iron.ProblemSubtypes.NONE]
+elasticityProblem = oc.Problem()
+elasticityProblemSpecification = [oc.ProblemClasses.ELASTICITY,
+                                  oc.ProblemTypes.LINEAR_ELASTICITY,
+                                  oc.ProblemSubtypes.NONE]
 elasticityProblem.CreateStart(ELASTICITY_PROBLEM_USER_NUMBER,context,elasticityProblemSpecification)
 elasticityProblem.CreateFinish()
 
@@ -422,16 +422,16 @@ elasticityProblem.ControlLoopCreateFinish()
 #-----------------------------------------------------------------------------------------------------------
 
 # Create problem solver
-elasticitySolver = iron.Solver()
+elasticitySolver = oc.Solver()
 elasticityProblem.SolversCreateStart()
-elasticityProblem.SolverGet([iron.ControlLoopIdentifiers.NODE],1,elasticitySolver)
-#elasticitySolver.OutputTypeSet(iron.SolverOutputTypes.NONE)
-#elasticitySolver.OutputTypeSet(iron.SolverOutputTypes.MONITOR)
-#elasticitySolver.OutputTypeSet(iron.SolverOutputTypes.PROGRESS)
-#elasticitySolver.OutputTypeSet(iron.SolverOutputTypes.TIMING)
-#elasticitySolver.OutputTypeSet(iron.SolverOutputTypes.SOLVER)
-elasticitySolver.OutputTypeSet(iron.SolverOutputTypes.MATRIX)
-elasticitySolver.LinearTypeSet(iron.LinearSolverTypes.DIRECT)
+elasticityProblem.SolverGet([oc.ControlLoopIdentifiers.NODE],1,elasticitySolver)
+#elasticitySolver.OutputTypeSet(oc.SolverOutputTypes.NONE)
+#elasticitySolver.OutputTypeSet(oc.SolverOutputTypes.MONITOR)
+#elasticitySolver.OutputTypeSet(oc.SolverOutputTypes.PROGRESS)
+#elasticitySolver.OutputTypeSet(oc.SolverOutputTypes.TIMING)
+#elasticitySolver.OutputTypeSet(oc.SolverOutputTypes.SOLVER)
+elasticitySolver.OutputTypeSet(oc.SolverOutputTypes.MATRIX)
+elasticitySolver.LinearTypeSet(oc.LinearSolverTypes.DIRECT)
 elasticityProblem.SolversCreateFinish()
 
 #-----------------------------------------------------------------------------------------------------------
@@ -439,13 +439,13 @@ elasticityProblem.SolversCreateFinish()
 #-----------------------------------------------------------------------------------------------------------
 
 # Create solver equations and add equations set to solver equations
-elasticitySolver = iron.Solver()
-elasticitySolverEquations = iron.SolverEquations()
+elasticitySolver = oc.Solver()
+elasticitySolverEquations = oc.SolverEquations()
 elasticityProblem.SolverEquationsCreateStart()
-elasticityProblem.SolverGet([iron.ControlLoopIdentifiers.NODE],1,elasticitySolver)
+elasticityProblem.SolverGet([oc.ControlLoopIdentifiers.NODE],1,elasticitySolver)
 elasticitySolver.SolverEquationsGet(elasticitySolverEquations)
-#elasticitySolverEquations.SparsityTypeSet(iron.SolverEquationsSparsityTypes.FULL)
-elasticitySolverEquations.SparsityTypeSet(iron.SolverEquationsSparsityTypes.SPARSE)
+#elasticitySolverEquations.SparsityTypeSet(oc.SolverEquationsSparsityTypes.FULL)
+elasticitySolverEquations.SparsityTypeSet(oc.SolverEquationsSparsityTypes.SPARSE)
 elasticityEquationsSetIndex = elasticitySolverEquations.EquationsSetAdd(elasticityEquationsSet)
 elasticityProblem.SolverEquationsCreateFinish()
 
@@ -453,7 +453,7 @@ elasticityProblem.SolverEquationsCreateFinish()
 # BOUNDARY CONDITIONS
 #-----------------------------------------------------------------------------------------------------------
 
-elasticityBoundaryConditions = iron.BoundaryConditions()
+elasticityBoundaryConditions = oc.BoundaryConditions()
 elasticitySolverEquations.BoundaryConditionsCreateStart(elasticityBoundaryConditions)
 
 if (numberOfDimensions == 2):
@@ -462,54 +462,54 @@ if (numberOfDimensions == 2):
         nodeNumber = yNodeIdx*numberOfXNodes+1
         nodeDomain = decomposition.NodeDomainGet(nodeNumber,1)
         if (nodeDomain == computationalNodeNumber):
-            elasticityBoundaryConditions.AddNode(elasticityDependentField,iron.FieldVariableTypes.U,1,
-                                                 iron.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,1,
-                                                 iron.BoundaryConditionsTypes.FIXED,0.0)
-            elasticityBoundaryConditions.AddNode(elasticityDependentField,iron.FieldVariableTypes.U,1,
-                                                 iron.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,2,
-                                                 iron.BoundaryConditionsTypes.FIXED,0.0)
+            elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.U,1,
+                                                 oc.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,1,
+                                                 oc.BoundaryConditionsTypes.FIXED,0.0)
+            elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.U,1,
+                                                 oc.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,2,
+                                                 oc.BoundaryConditionsTypes.FIXED,0.0)
             if (haveHermite):
-                elasticityBoundaryConditions.AddNode(elasticityDependentField,iron.FieldVariableTypes.U,1,
-                                                     iron.GlobalDerivativeConstants.GLOBAL_DERIV_S1,nodeNumber,1,
-                                                     iron.BoundaryConditionsTypes.FIXED,0.0)
-                elasticityBoundaryConditions.AddNode(elasticityDependentField,iron.FieldVariableTypes.U,1,
-                                                     iron.GlobalDerivativeConstants.GLOBAL_DERIV_S1,nodeNumber,2,
-                                                     iron.BoundaryConditionsTypes.FIXED,0.0)
-                elasticityBoundaryConditions.AddNode(elasticityDependentField,iron.FieldVariableTypes.U,1,
-                                                     iron.GlobalDerivativeConstants.GLOBAL_DERIV_S2,nodeNumber,1,
-                                                     iron.BoundaryConditionsTypes.FIXED,0.0)
-                elasticityBoundaryConditions.AddNode(elasticityDependentField,iron.FieldVariableTypes.U,1,
-                                                     iron.GlobalDerivativeConstants.GLOBAL_DERIV_S2,nodeNumber,2,
-                                                     iron.BoundaryConditionsTypes.FIXED,0.0)
-                elasticityBoundaryConditions.AddNode(elasticityDependentField,iron.FieldVariableTypes.U,1,
-                                                     iron.GlobalDerivativeConstants.GLOBAL_DERIV_S1_S2,nodeNumber,1,
-                                                     iron.BoundaryConditionsTypes.FIXED,0.0)
-                elasticityBoundaryConditions.AddNode(elasticityDependentField,iron.FieldVariableTypes.U,1,
-                                                     iron.GlobalDerivativeConstants.GLOBAL_DERIV_S1_S2,nodeNumber,2,
-                                                     iron.BoundaryConditionsTypes.FIXED,0.0)                
+                elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.U,1,
+                                                     oc.GlobalDerivativeConstants.GLOBAL_DERIV_S1,nodeNumber,1,
+                                                     oc.BoundaryConditionsTypes.FIXED,0.0)
+                elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.U,1,
+                                                     oc.GlobalDerivativeConstants.GLOBAL_DERIV_S1,nodeNumber,2,
+                                                     oc.BoundaryConditionsTypes.FIXED,0.0)
+                elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.U,1,
+                                                     oc.GlobalDerivativeConstants.GLOBAL_DERIV_S2,nodeNumber,1,
+                                                     oc.BoundaryConditionsTypes.FIXED,0.0)
+                elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.U,1,
+                                                     oc.GlobalDerivativeConstants.GLOBAL_DERIV_S2,nodeNumber,2,
+                                                     oc.BoundaryConditionsTypes.FIXED,0.0)
+                elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.U,1,
+                                                     oc.GlobalDerivativeConstants.GLOBAL_DERIV_S1_S2,nodeNumber,1,
+                                                     oc.BoundaryConditionsTypes.FIXED,0.0)
+                elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.U,1,
+                                                     oc.GlobalDerivativeConstants.GLOBAL_DERIV_S1_S2,nodeNumber,2,
+                                                     oc.BoundaryConditionsTypes.FIXED,0.0)                
         if (boundaryConditionType == DIRICHLET_BCS):
             #Set downward displacement on the right hand edge 
             nodeNumber = numberOfNodes
             nodeDomain = decomposition.NodeDomainGet(nodeNumber,1)
             if (nodeDomain == computationalNodeNumber):
-                elasticityBoundaryConditions.AddNode(elasticityDependentField,iron.FieldVariableTypes.U,1,
-                                                     iron.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,1,
-                                                     iron.BoundaryConditionsTypes.FIXED,0.0)
-                elasticityBoundaryConditions.AddNode(elasticityDependentField,iron.FieldVariableTypes.U,1,
-                                                     iron.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,2,
-                                                     iron.BoundaryConditionsTypes.FIXED,MAX_DISPLACEMENT)
+                elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.U,1,
+                                                     oc.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,1,
+                                                     oc.BoundaryConditionsTypes.FIXED,0.0)
+                elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.U,1,
+                                                     oc.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,2,
+                                                     oc.BoundaryConditionsTypes.FIXED,MAX_DISPLACEMENT)
         else:
             #Set downward force on the right hand edge
             if (numberOfDimensions == 2):
                 nodeNumber = numberOfNodes
                 nodeDomain = decomposition.NodeDomainGet(nodeNumber,1)
                 if (nodeDomain == computationalNodeNumber):
-                    elasticityBoundaryConditions.AddNode(elasticityDependentField,iron.FieldVariableTypes.T,1,
-                                                         iron.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,1,
-                                                         iron.BoundaryConditionsTypes.FIXED,0.0)
-                    elasticityBoundaryConditions.AddNode(elasticityDependentField,iron.FieldVariableTypes.T,1,
-                                                         iron.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,2,
-                                                         iron.BoundaryConditionsTypes.FIXED,MAX_FORCE)
+                    elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.T,1,
+                                                         oc.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,1,
+                                                         oc.BoundaryConditionsTypes.FIXED,0.0)
+                    elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.T,1,
+                                                         oc.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,2,
+                                                         oc.BoundaryConditionsTypes.FIXED,MAX_FORCE)
 else:
     #3D - Use analytic
     elasticitySolverEquations.BoundaryConditionsAnalytic()
@@ -523,22 +523,22 @@ elasticitySolverEquations.BoundaryConditionsCreateFinish()
 elasticityProblem.Solve()
 
 # Calculate the derived fields
-elasticityEquationsSet.DerivedVariableCalculate(iron.EquationsSetDerivedTensorTypes.SMALL_STRAIN)
-elasticityEquationsSet.DerivedVariableCalculate(iron.EquationsSetDerivedTensorTypes.CAUCHY_STRESS)
-elasticityEquationsSet.DerivedVariableCalculate(iron.EquationsSetDerivedTensorTypes.ELASTIC_WORK)
+elasticityEquationsSet.DerivedVariableCalculate(oc.EquationsSetDerivedTensorTypes.SMALL_STRAIN)
+elasticityEquationsSet.DerivedVariableCalculate(oc.EquationsSetDerivedTensorTypes.CAUCHY_STRESS)
+elasticityEquationsSet.DerivedVariableCalculate(oc.EquationsSetDerivedTensorTypes.ELASTIC_WORK)
 
 #-----------------------------------------------------------------------------------------------------------
 # OUTPUT
 #-----------------------------------------------------------------------------------------------------------
 
 if(numberOfDimensions == 3):
-    iron.AnalyticAnalysis_Output(elasticityDependentField,'CantileverEndLoad')
+    oc.AnalyticAnalysis_Output(elasticityDependentField,'CantileverEndLoad')
 
-fields = iron.Fields()
+fields = oc.Fields()
 fields.CreateRegion(region)
 fields.NodesExport("LinearCantilever","FORTRAN")
 fields.ElementsExport("LinearCantilever","FORTRAN")
 fields.Finalise()
 
 # Finalise OpenCMISS
-iron.Finalise()
+oc.Finalise()
