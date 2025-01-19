@@ -460,7 +460,7 @@ if (numberOfDimensions == 2):
     # Set left hand edge to be built in. 
     for yNodeIdx in range(0,numberOfYNodes):
         nodeNumber = yNodeIdx*numberOfXNodes+1
-        nodeDomain = decomposition.NodeDomainGet(nodeNumber,1)
+        nodeDomain = decomposition.NodeDomainGet(1,nodeNumber)
         if (nodeDomain == computationalNodeNumber):
             elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.U,1,
                                                  oc.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,1,
@@ -490,7 +490,7 @@ if (numberOfDimensions == 2):
         if (boundaryConditionType == DIRICHLET_BCS):
             #Set downward displacement on the right hand edge 
             nodeNumber = numberOfNodes
-            nodeDomain = decomposition.NodeDomainGet(nodeNumber,1)
+            nodeDomain = decomposition.NodeDomainGet(1,nodeNumber)
             if (nodeDomain == computationalNodeNumber):
                 elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.U,1,
                                                      oc.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,1,
@@ -502,7 +502,7 @@ if (numberOfDimensions == 2):
             #Set downward force on the right hand edge
             if (numberOfDimensions == 2):
                 nodeNumber = numberOfNodes
-                nodeDomain = decomposition.NodeDomainGet(nodeNumber,1)
+                nodeDomain = decomposition.NodeDomainGet(1,nodeNumber)
                 if (nodeDomain == computationalNodeNumber):
                     elasticityBoundaryConditions.AddNode(elasticityDependentField,oc.FieldVariableTypes.T,1,
                                                          oc.GlobalDerivativeConstants.NO_GLOBAL_DERIV,nodeNumber,1,
